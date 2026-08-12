@@ -281,15 +281,16 @@
    ================================================================ */
 const WORKS = [
 
-  /* ----- upcoming ----- */
+  /* ----- AI short film ----- */
   {
-    slug:"ai-video-projects", title:"AI Video Projects", year:"Upcoming", location:"",
-    category:"upcoming",
-    materials:"AI-assisted moving image",
+    slug:"scent-of-moment", title:"Scent of moment", year:"2026", location:"",
+    category:"ai short film",
+    materials:"AI-assisted short film, 20 sec.",
     g1:"rgba(120,145,255,.55)", g2:"rgba(255,150,205,.35)",
-    images:[],
+    thumb:"videos/scent-of-moment.mp4", images:["videos/scent-of-moment.mp4"],
+    videoControls:true,
     statement:[
-      "An evolving series of AI-assisted moving-image experiments exploring space, memory, and perception. New works will be added as they are completed."
+      "AI-assisted short film."
     ]
   },
 
@@ -1543,7 +1544,7 @@ const WORKS = [
 ];
 
 const PHOTO_REGIONS = ["all", "usa", "japan", "korea", "saipan", "thailand"];
-const FILTERS = ["all", "upcoming", "space design", "sculpture", "photo", "video", "digital art", "painting"];
+const FILTERS = ["all", "ai short film", "space design", "sculpture", "photo", "video", "digital art", "painting"];
 
 /* ================================================================
    2 · HOME COLLAGE — x/y/w = position + width, d = parallax depth
@@ -1796,9 +1797,12 @@ function renderWork(slug){
   if (!w) return renderGrid();
 
   const plates = w.images.length
-    ? w.images.map(src => isVimeo(src)
-        ? mediaHTML(src, w.title)
-        : `<div class="plate">${mediaHTML(src, w.title)}</div>`).join("")
+    ? w.images.map(src => {
+        if (isVimeo(src)) return mediaHTML(src, w.title);
+        if (isVid(src) && w.videoControls)
+          return `<div class="plate"><video src="${src}" controls playsinline preload="metadata"></video></div>`;
+        return `<div class="plate">${mediaHTML(src, w.title)}</div>`;
+      }).join("")
     : `<div class="visual"><div class="lightfield" style="--g1:${w.g1};--g2:${w.g2}"></div></div>`;
 
   app.innerHTML = `
