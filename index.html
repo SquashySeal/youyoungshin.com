@@ -283,14 +283,15 @@ const WORKS = [
 
   /* ----- AI short film ----- */
   {
-    slug:"scent-of-moment", title:"Scent of moment", year:"2026", location:"",
+    slug:"scent-of-moment", title:"Scent of a Moment", year:"2026", location:"",
     category:"ai short film",
-    materials:"AI-assisted short film, 20 sec.",
+    status:"Work in Progress",
+    materials:"AI-assisted short film, 20 sec. preview.",
     g1:"rgba(120,145,255,.55)", g2:"rgba(255,150,205,.35)",
     thumb:"videos/scent-of-moment.mp4", images:["videos/scent-of-moment.mp4"],
     videoControls:true,
     statement:[
-      "AI-assisted short film."
+      "A selected scene from an AI short film currently in production. Additional scenes, sound design, and the final edit are in progress."
     ]
   },
 
@@ -1703,7 +1704,7 @@ const visualHTML = (w) => w.thumb
 const tileHTML = (w) => `
   <a class="tile" href="/work/${w.slug}">
     ${visualHTML(w)}
-    <div class="cap">${w.title}<span class="it">${w.year}</span></div>
+    <div class="cap">${w.title}<span class="it">${w.year}${w.status ? ` · ${w.status}` : ""}</span></div>
   </a>`;
 
 /* ---------- home: layered collage with mouse parallax ---------- */
@@ -1825,7 +1826,7 @@ function renderWork(slug){
       <div>
         <div class="d-head">
           <h1>${w.title}</h1>
-          <span class="it">${w.location ? w.location + ", " : ""}${w.year}</span>
+          <span class="it">${w.location ? w.location + ", " : ""}${w.year}${w.status ? ` · ${w.status}` : ""}</span>
         </div>
         <div class="plates">${plates}</div>
         ${w.materials ? `<div class="materials">${w.materials}</div>` : ""}
