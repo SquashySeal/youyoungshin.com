@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="/">
 <title>Youyoung Shin</title>
 <meta name="description" content="Youyoung Shin — sculptor and installation artist working with light, space, and perception. Los Angeles.">
 
@@ -249,22 +250,22 @@
 
 <nav class="topnav" id="topnav" aria-label="Main">
   <div class="col">
-    <a class="sp u-hover" href="#/featured" data-nav="featured">Featured</a>
+    <a class="sp u-hover" href="/featured" data-nav="featured">Featured</a>
     <div class="sub">
-      <a class="sp u-hover" href="#/works" data-nav="works">Works</a>
+      <a class="sp u-hover" href="/works" data-nav="works">Works</a>
     </div>
   </div>
   <div class="col">
-    <a class="sp u-hover" href="#/exhibitions" data-nav="exhibitions">Exhibition</a>
+    <a class="sp u-hover" href="/exhibitions" data-nav="exhibitions">Exhibition</a>
     <div class="sub">
-      <a class="sp u-hover" href="#/cv" data-nav="cv">CV</a>
+      <a class="sp u-hover" href="/cv" data-nav="cv">CV</a>
     </div>
   </div>
   <div class="col">
-    <a class="sp u-hover" href="#/about" data-nav="about">About</a>
+    <a class="sp u-hover" href="/about" data-nav="about">About</a>
     <div class="sub">
-      <a class="sp u-hover" href="#/contact" data-nav="contact">Contact</a>
-      <a class="sp u-hover" href="#/shoutout" data-nav="shoutout">Shout out</a>
+      <a class="sp u-hover" href="/contact" data-nav="contact">Contact</a>
+      <a class="sp u-hover" href="/shoutout" data-nav="shoutout">Shout out</a>
     </div>
   </div>
 </nav>
@@ -1675,7 +1676,7 @@ const visualHTML = (w) => w.thumb
   : `<div class="visual"><div class="lightfield" style="--g1:${w.g1};--g2:${w.g2}"></div></div>`;
 
 const tileHTML = (w) => `
-  <a class="tile" href="#/work/${w.slug}">
+  <a class="tile" href="/work/${w.slug}">
     ${visualHTML(w)}
     <div class="cap">${w.title}<span class="it">${w.year}</span></div>
   </a>`;
@@ -1689,7 +1690,7 @@ function renderHome(){
           return `<span class="c-letter" style="--x:${it.x};--y:${it.y}" data-d="${it.d}">${it.char}</span>`;
         const w = bySlug(it.slug);
         if (!w) return "";
-        return `<a class="c-item" href="#/work/${w.slug}"
+        return `<a class="c-item" href="/work/${w.slug}"
                    style="--x:${it.x};--y:${it.y};--w:${it.w}" data-d="${it.d}">
                   ${visualHTML(w)}
                 </a>`;
@@ -1926,22 +1927,46 @@ function renderContact(){
   spFix(app);
 }
 
-/* ---------- router ---------- */
+/* ---------- clean URL router ---------- */
+const REDIRECT_KEY = "youyoungshin.redirect";
+
+/* GitHub Pages sends direct clean URLs through 404.html, which stores
+   the requested path here before returning to the root document. */
+try {
+  const savedPath = sessionStorage.getItem(REDIRECT_KEY);
+  if (savedPath) {
+    sessionStorage.removeItem(REDIRECT_KEY);
+    history.replaceState(null, "", savedPath);
+  } else if (location.hash.startsWith("#/")) {
+    /* Keep previously shared #/ links working, but clean the URL. */
+    history.replaceState(null, "", location.hash.slice(1));
+  }
+} catch {
+  if (location.hash.startsWith("#/")) {
+    history.replaceState(null, "", location.hash.slice(1));
+  }
+}
+
 function route(){
   if (collageCleanup){ collageCleanup(); collageCleanup = null; }
 
-  const hash = location.hash || "#/";
+  /* Convert an old hash URL if one is opened after the initial load. */
+  if (location.hash.startsWith("#/")) {
+    history.replaceState(null, "", location.hash.slice(1));
+  }
+
+  const path = decodeURI(location.pathname).replace(/\/+$/, "") || "/";
   let current = "home";
 
-  if (hash.startsWith("#/work/"))      { renderWork(hash.slice(7)); current = "works"; }
-  else if (hash === "#/featured")      { renderFeatured(); current = "featured"; }
-  else if (hash === "#/works")         { renderGrid(); current = "works"; }
-  else if (hash === "#/exhibitions")   { renderExhibitions(); current = "exhibitions"; }
-  else if (hash === "#/cv")            { renderCV(); current = "cv"; }
-  else if (hash === "#/about")         { renderAbout(); current = "about"; }
-  else if (hash === "#/contact")       { renderContact(); current = "contact"; }
-  else if (hash === "#/shoutout")      { renderShoutout(); current = "shoutout"; }
-  else                                 { renderHome(); }
+  if (path.startsWith("/work/"))      { renderWork(path.slice(6)); current = "works"; }
+  else if (path === "/featured")      { renderFeatured(); current = "featured"; }
+  else if (path === "/works")         { renderGrid(); current = "works"; }
+  else if (path === "/exhibitions")   { renderExhibitions(); current = "exhibitions"; }
+  else if (path === "/cv")            { renderCV(); current = "cv"; }
+  else if (path === "/about")         { renderAbout(); current = "about"; }
+  else if (path === "/contact")       { renderContact(); current = "contact"; }
+  else if (path === "/shoutout")      { renderShoutout(); current = "shoutout"; }
+  else                                { renderHome(); }
 
   document.querySelectorAll("[data-nav]").forEach(a =>
     a.classList.toggle("is-active", a.getAttribute("data-nav") === current));
@@ -1953,6 +1978,27 @@ function route(){
     : current[0].toUpperCase() + current.slice(1);
   document.title = "Youyoung Shin" + (current !== "home" ? " — " + label : "");
 }
+
+/* Navigate without reloading while keeping browser Back/Forward working. */
+document.addEventListener("click", event => {
+  const link = event.target.closest("a");
+  if (!link || event.defaultPrevented || event.button !== 0 ||
+      event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+      link.target === "_blank" || link.hasAttribute("download")) return;
+
+  const href = link.getAttribute("href");
+  if (!href || !href.startsWith("/")) return;
+
+  const url = new URL(href, location.origin);
+  if (url.origin !== location.origin) return;
+
+  event.preventDefault();
+  history.pushState(null, "", url.pathname + url.search);
+  route();
+});
+
+window.addEventListener("popstate", route);
+window.addEventListener("hashchange", route);
 
 /* nav hover intent: open on enter, forgiving close */
 document.querySelectorAll(".topnav .col").forEach(col => {
