@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Youyoung Shin</title>
+  <script>
+    (function () {
+      var requested = location.pathname + location.search + location.hash;
+      try {
+        sessionStorage.setItem("youyoungshin.redirect", requested);
+        location.replace("/");
+      } catch (error) {
+        location.replace("/#" + location.pathname + location.search);
+      }
+    }());
+  </script>
+</head>
+<body></body>
+</html>
